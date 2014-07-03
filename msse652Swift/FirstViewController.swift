@@ -8,7 +8,10 @@
 
 import UIKit
 
-class FirstViewController: UIViewController {
+@objc(FirstViewController) class FirstViewController: UIViewController {
+    
+    @IBAction func exitHere(sender: UIStoryboardSegue) {
+    }
                             
     override func viewDidLoad() {
         super.viewDidLoad()
