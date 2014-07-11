@@ -10,6 +10,7 @@ import UIKit
 
 class SCISProgramsTableViewController: UITableViewController {
 
+    var service = NSURLSessionService()
     /*
     init(style: UITableViewStyle) {
         super.init(style: style)
@@ -18,12 +19,17 @@ class SCISProgramsTableViewController: UITableViewController {
     */
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        service.downloadProgramsForTableView(self.tableView)
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -32,15 +38,13 @@ class SCISProgramsTableViewController: UITableViewController {
     }
 
     // #pragma mark - Table view data source
-
     override func numberOfSectionsInTableView(tableView: UITableView?) -> Int {
         return 1
     }
 
     override func tableView(tableView: UITableView?, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return service.arrayPrograms.count
     }
-
     
     override func tableView(tableView: UITableView!, cellForRowAtIndexPath indexPath: NSIndexPath!) -> UITableViewCell! {
         let CELLIDENTIFIER = "CELLIDENTIFIER"
@@ -49,7 +53,8 @@ class SCISProgramsTableViewController: UITableViewController {
             cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: "CELL")
         }
         // Configure the cell...
-        cell!.textLabel.text = "Programs"
+        var program : Program = service.arrayPrograms[indexPath.row]
+        cell!.textLabel.text = program.pName
         return cell
     }
     
