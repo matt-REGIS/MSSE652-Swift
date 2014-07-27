@@ -10,11 +10,13 @@ import UIKit
 
 class NSURLSessionService: NSObject, Service {
    
-    let kLocationURL = "http://regisscis.net/Regis2/webresources/regis2.program";
+    let kLocationProgramURL = "http://regisscis.net/Regis2/webresources/regis2.program";
+    let kLocationCourseURL = "http://regisscis.net/Regis2/webresources/regis2.course";
+    
     var arrayPrograms: Array<Program> = []
     
     func downloadProgramsForTableView(tableView: UITableView) {
-        var url = NSURL(string: kLocationURL)
+        var url = NSURL(string: kLocationProgramURL)
         var request = NSMutableURLRequest(URL: url)
         
         var sessionConfig: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()
@@ -37,12 +39,41 @@ class NSURLSessionService: NSObject, Service {
                 for item in json {
                     var pId = item["id"] as? Int
                     var pName = item["name"] as? String
-                    var program: Program = Program(pId: String(pId!), pName: pName!)
+                    var program: Program = Program(pId: pId!, pName: pName!)
                     self.arrayPrograms.append(program)
                 }
                 dispatch_async(dispatch_get_main_queue(),{
                     tableView.reloadData()
                 })
+                self.downloadCourses(session)
+            }).resume()
+    }
+    
+    func downloadCourses(session: NSURLSession) {
+        var url = NSURL(string: kLocationCourseURL)
+        var request = NSMutableURLRequest(URL: url)
+        
+        session.dataTaskWithRequest(request,
+            completionHandler: {(data: NSData!,
+                response: NSURLResponse!,
+                error: NSError!) in
+                
+                var error: NSError?
+                let json = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: &error) as NSArray
+                
+                for item in json {
+                    var cId = item["id"] as? Int
+                    var cName = item["name"] as? String
+                    var cProgramDict: NSDictionary = item["pid"] as NSDictionary
+                    var cpid = cProgramDict["id"] as? Int
+                    for program in self.arrayPrograms {
+                        if cpid == program.pId {
+                            var course: Course = Course(cId: cId!, cName: cName!)
+                            program.pCourses.append(course)
+                        }
+                    }
+                }
+                
             }).resume()
     }
     

@@ -17,6 +17,8 @@ class SCISCoursesTableViewController: UITableViewController {
     }
     */
     
+    var program: Program?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -39,7 +41,7 @@ class SCISCoursesTableViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView?, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return self.program!.pCourses.count
     }
 
     override func tableView(tableView: UITableView!, cellForRowAtIndexPath indexPath: NSIndexPath!) -> UITableViewCell! {
@@ -49,7 +51,8 @@ class SCISCoursesTableViewController: UITableViewController {
             cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: "CELL")
         }
         // Configure the cell...
-        cell!.textLabel.text = "Courses"
+        var course: Course = self.program!.pCourses[indexPath.row]
+        cell!.textLabel.text = course.cName
         return cell
     }
 

@@ -10,6 +10,8 @@ import UIKit
 
 class SCISProgramsTableViewController: UITableViewController {
 
+    @IBOutlet weak var rightBarButtonItem: UIBarButtonItem!
+
     var service = NSURLSessionService()
     /*
     init(style: UITableViewStyle) {
@@ -58,6 +60,62 @@ class SCISProgramsTableViewController: UITableViewController {
         return cell
     }
     
+    @IBAction func actionShare(sender: UIBarButtonItem) {
+        //Init an activity indicator to show that a task is in progress
+        var activityView: UIActivityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle:UIActivityIndicatorViewStyle.Gray)
+        //Init a bar button item with activity indicator as its view
+        var rightBarButtonItemActivity: UIBarButtonItem = UIBarButtonItem(customView:activityView)
+        //Set the nav bar's right bar button item to activity view
+        self.navigationItem.rightBarButtonItem = rightBarButtonItemActivity;
+        //Start animation
+        activityView.startAnimating()
+        
+        //Create a queue for animation
+        var queue: dispatch_queue_t = dispatch_queue_create("openActivityIndicatorQueue", nil)
+        
+        //Run asynchronously
+        dispatch_async(queue, {
+            //Set custom message with numbered program names
+            var head: String = "SCIS Programs\n"
+            var programList: String = ""
+            var count: Int = 1
+            for program in self.service.arrayPrograms {
+                var number: String = NSString(format: "%lu. ", count)
+                programList = "\(programList) \(number) \(program.pName) \n"
+                //programList = [[[programList stringByAppendingString:number] stringByAppendingString:program.name] stringByAppendingString:@"\n"];
+                count++;
+            }
+            head = "\(head) \(programList)"
+            //head = [head stringByAppendingString:programList];
+            var textToShare: String = "\(head)\nRetrieved from\n"
+            //NSString *textToShare = [head stringByAppendingString:@"\nRetrieved from\n"];
+            
+            //Create the image to share
+            var imageToShare: UIImage = UIImage(named: "REGIS")
+            //Create the url to share
+            var url: NSURL = NSURL.URLWithString("http://regisscis.net/Regis2/webresources/regis2.program")
+            //Create array that holds the text, url and image to share
+            var activityItems: Array  = []
+            
+            //Init activity service to feed the text, url and image to share
+            var activity: UIActivity = UIActivity()
+            //Create array of activity to feed into UIActivityViewController
+            var applicationActivities: Array = [activity]
+            //Init the UIActivityViewController with array of activities
+            var activityVC:UIActivityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+            //Specify the types of services that should be excluded
+            activityVC.excludedActivityTypes = [UIActivityTypeAddToReadingList, UIActivityTypeCopyToPasteboard, UIActivityTypeSaveToCameraRoll, UIActivityTypeAssignToContact, UIActivityTypePrint, UIActivityTypeAirDrop];
+            //Call the main queue to perform UI operations
+            dispatch_async(dispatch_get_main_queue(), {
+                //Stop animation
+                activityView.stopAnimating()
+                //Present activity window
+                self.presentViewController(activityVC, animated: true, completion: nil)
+                //Set back the right bar button item to its original state
+                self.navigationItem.rightBarButtonItem = self.rightBarButtonItem;
+            })
+        })
+    }
 
     /*
     // Override to support conditional editing of the table view.
@@ -94,14 +152,18 @@ class SCISProgramsTableViewController: UITableViewController {
     }
     */
 
-    /*
-    // #pragma mark - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue?, sender: AnyObject?) {
+    override func prepareForSegue(segue: UIStoryboardSegue!, sender: AnyObject?) {
+        
+        if segue.identifier == "fromProgramsToCourses"  {
+            var cvc: SCISCoursesTableViewController = segue!.destinationViewController as SCISCoursesTableViewController
+            var cell: UITableViewCell = sender as UITableViewCell
+            var indexPath: NSIndexPath = self.tableView.indexPathForCell(cell)
+            var program: Program = self.service.arrayPrograms[indexPath.row]
+            cvc.program = program
+        }
+        
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
     }
-    */
 
 }
